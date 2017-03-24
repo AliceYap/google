@@ -84,6 +84,13 @@ except Exception:
     user_agents_list = [USER_AGENT]
 
 
+class SearchResult:
+    def __init__(self, link, title, snippet):
+        self.link = link
+        self.title = title
+        self.snippet = snippet
+
+
 # Get a random user agent.
 def get_random_user_agent():
     """
@@ -328,8 +335,8 @@ def search(query, tld='com', lang='en', tbs='0', safe='off', num=10, start=0,
             try:
                 nextdiv = a.findNext('div', attrs={'class': 's'})
                 s_span = nextdiv.findNext('span', attrs={'class': 'st'})
-                snippet = s_span.text
-            except KeyError:
+                snippet = s_span.text.replace('\n', '')
+            except AttributeError:
                 snippet = ''
 
             # Filter invalid links and links pointing to Google itself.
@@ -344,7 +351,7 @@ def search(query, tld='com', lang='en', tbs='0', safe='off', num=10, start=0,
             hashes.add(h)
 
             # Yield the result.
-            yield link, title, snippet
+            yield SearchResult(link, title, snippet)
 
         # End if there are no more results.
         if not soup.find(id='nav'):
