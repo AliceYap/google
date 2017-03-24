@@ -78,7 +78,7 @@ USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)'
 install_folder = os.path.abspath(os.path.split(__file__)[0])
 user_agents_file = os.path.join(install_folder, 'user_agents.txt')
 try:
-    with open('user_agents.txt') as fp:
+    with open(user_agents_file) as fp:
         user_agents_list = [_.strip() for _ in fp.readlines()]
 except Exception:
     user_agents_list = [USER_AGENT]
@@ -320,8 +320,17 @@ def search(query, tld='com', lang='en', tbs='0', safe='off', num=10, start=0,
             # Get the URL from the anchor tag.
             try:
                 link = a['href']
+                title = a.text
             except KeyError:
                 continue
+
+            # find snippet
+            try:
+                nextdiv = a.findNext('div', attrs={'class': 's'})
+                s_span = nextdiv.findNext('span', attrs={'class': 'st'})
+                snippet = s_span.text
+            except KeyError:
+                snippet = ''
 
             # Filter invalid links and links pointing to Google itself.
             link = filter_result(link)
@@ -335,7 +344,7 @@ def search(query, tld='com', lang='en', tbs='0', safe='off', num=10, start=0,
             hashes.add(h)
 
             # Yield the result.
-            yield link
+            yield link, title, snippet
 
         # End if there are no more results.
         if not soup.find(id='nav'):
